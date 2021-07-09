@@ -9,6 +9,7 @@ from .auth.auth import AuthError, requires_auth
 
 app = Flask(__name__)
 setup_db(app)
+# allow cross-domain access to all the server routes from any other domain
 CORS(app)
 
 '''
@@ -17,17 +18,22 @@ CORS(app)
 !! NOTE THIS MUST BE UNCOMMENTED ON FIRST RUN
 !! Running this funciton will add one
 '''
-# db_drop_and_create_all()
+db_drop_and_create_all()
 
 # ROUTES
-'''
-@TODO implement endpoint
-    GET /drinks
-        it should be a public endpoint
-        it should contain only the drink.short() data representation
-    returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
-        or appropriate status code indicating reason for failure
-'''
+
+# public endpoint to handle GET requests for all available drinks
+@app.route('/drinks', methods=['GET'])
+def get_drinks():
+    drinks = Drink.query.all()
+    if not drinks:
+        abort(404)
+    drinks_short = [drink.short() for drink in drinks]
+
+    return jsonify({
+        'success': True,
+        'drinks': drinks_short
+    })
 
 
 '''
@@ -76,10 +82,7 @@ CORS(app)
 '''
 
 
-# Error Handling
-'''
-Example error handling for unprocessable entity
-'''
+# ERROR HANDLING
 
 
 @app.errorhandler(422)
@@ -91,21 +94,13 @@ def unprocessable(error):
     }), 422
 
 
-'''
-@TODO implement error handlers using the @app.errorhandler(error) decorator
-    each error handler should return (with approprate messages):
-             jsonify({
-                    "success": False,
-                    "error": 404,
-                    "message": "resource not found"
-                    }), 404
-
-'''
-
-'''
-@TODO implement error handler for 404
-    error handler should conform to general task above
-'''
+@app.errorhandler(404)
+def not_found(error):
+    return jsonify({
+        "success": False,
+        "error": 404,
+        "message": "resource not found"
+    }), 404
 
 
 '''
