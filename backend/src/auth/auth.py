@@ -47,7 +47,7 @@ def check_permissions(permission, payload):
     if 'permissions' not in payload:
         abort(403)
     # requested permission string is not in the payload permissions array
-    if permission not in payload['permission']:
+    if permission not in payload['permissions']:
         abort(403)
     # otherwise return True to indicate that that permission exists without problems
     return True
