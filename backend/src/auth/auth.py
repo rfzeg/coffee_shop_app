@@ -25,18 +25,28 @@ class AuthError(Exception):
 # Unpack the request header
 def get_token_auth_header():
     # raise an AuthError if no header is present
-    if 'Authorization' not in request.headers:
-        abort(401)
+    auth_header = request.headers.get('Authorization', None)
+    if not auth_header:
+        raise AuthError({
+            'code': 'authorization_header_missing',
+            'description': 'Authorization header is expected.'
+        }, 401)
 
-    auth_header = request.headers['Authorization']
     # split bearer and the token
     header_parts = auth_header.split(' ')
 
     # raise an AuthError if the header is malformed
     if len(header_parts) != 2:
-        abort(401)
+        raise AuthError({
+            'code': 'invalid_header',
+            'description': 'Authorization header must be bearer token.'
+        }, 401)
+
     elif header_parts[0].lower() != 'bearer':
-        abort(401)
+        raise AuthError({
+            'code': 'invalid_header',
+            'description': 'Authorization header must start with "Bearer".'
+        }, 401)
 
     # return the token part of the header
     return header_parts[1]
@@ -45,12 +55,17 @@ def get_token_auth_header():
 def check_permissions(permission, payload):
     # permissions are not included in the payload
     if 'permissions' not in payload:
-        abort(403)
+        raise AuthError({
+            'code': 'invalid_claims',
+            'description': 'Permissions not included in JWT.'
+        }, 400)
+
     # requested permission string is not in the payload permissions array
     if permission not in payload['permissions']:
-        abort(403)
-    # otherwise return True to indicate that that permission exists without problems
-    return True
+        raise AuthError({
+            'code': 'unauthorized',
+            'description': 'Permission not found.'
+        }, 401)
 
 # Verify that a JWT is authentic and decode it
 def verify_decode_jwt(token):
