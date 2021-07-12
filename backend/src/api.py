@@ -57,9 +57,9 @@ def get_drinks_detail():
 def create_drinks(payload):
     body = request.get_json()
     req_title = body.get('title')
-    req_recipe = json.dumps(body['recipe'])
+    req_recipe = body.get('recipe', None)
     try:
-        drink = Drink(title=req_title, recipe=req_recipe)
+        drink = Drink(title=req_title, recipe=json.dumps([req_recipe]))
         drink.insert()
         return jsonify({
             'success': True,
