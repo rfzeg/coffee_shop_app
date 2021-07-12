@@ -110,21 +110,25 @@ def verify_decode_jwt(token):
             return payload
 
         except jwt.ExpiredSignatureError:
+            print('Token expired.')
             raise AuthError({
                 'code': 'token_expired',
                 'description': 'Token expired.'
             }, 401)
 
         except jwt.JWTClaimsError:
+            print('Incorrect claims. Please, check the audience and issuer.')
             raise AuthError({
                 'code': 'invalid_claims',
                 'description': 'Incorrect claims. Please, check the audience and issuer.'
             }, 401)
         except Exception:
+            print('Unable to parse authentication token.')
             raise AuthError({
                 'code': 'invalid_header',
                 'description': 'Unable to parse authentication token.'
             }, 400)
+    print('Unable to find the appropriate key.')
     raise AuthError({
                 'code': 'invalid_header',
                 'description': 'Unable to find the appropriate key.'
@@ -138,6 +142,7 @@ def requires_auth(permission=''):
             try:
                 payload = verify_decode_jwt(token)
             except:
+                print("Unable to verify that a JWT is authentic and decode it!")
                 abort(401)
             # make sure permission exists in JWT
             check_permissions(permission, payload)
