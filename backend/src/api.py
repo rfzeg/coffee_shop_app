@@ -113,15 +113,13 @@ def delete_drinks(payload, drink_id):
 
 # ERROR HANDLING
 
-
-@app.errorhandler(422)
+@app.errorhandler(401)
 def unprocessable(error):
     return jsonify({
         "success": False,
-        "error": 422,
-        "message": "unprocessable"
-    }), 422
-
+        "error": 401,
+        "message": "Authentication Error"
+    }), 401
 
 @app.errorhandler(404)
 def not_found(error):
@@ -131,8 +129,25 @@ def not_found(error):
         "message": "resource not found"
     }), 404
 
+@app.errorhandler(422)
+def unprocessable(error):
+    return jsonify({
+        "success": False,
+        "error": 422,
+        "message": "unprocessable"
+    }), 422
 
-'''
-@TODO implement error handler for AuthError
-    error handler should conform to general task above
-'''
+@app.errorhandler(500)
+def internal_server_error(error):
+    return jsonify({
+        "success": False,
+        "error": 500,
+        "message": "internal server error"
+    }), 500
+
+
+@app.errorhandler(AuthError)
+def handle_auth_error(ex):
+    response = jsonify(ex.error)
+    response.status_code = ex.status_code
+    return response
