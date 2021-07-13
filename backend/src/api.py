@@ -83,19 +83,16 @@ def modify_drinks(payload, drink_id):
     }), 404
 
     body = request.get_json()
-    title = body['title']
-    recipe = body['recipe']
+    title = body.get('title')
+    recipe = body.get('recipe', None)
 
     if title:
         drink.title = title
     if recipe:
-        drink.recipe = json.dumps(recipe)
+        drink.recipe = json.dumps([recipe])
     drink.update()
 
-    return jsonify({
-        'success': True,
-        'drinks': drink.long()
-    }), 200
+    return {'drinks': [drink.long()], 'success': True}, 200
 
 
 # private endpoint to delete an existing drink
